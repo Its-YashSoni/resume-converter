@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume Converter</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo">⚡ ResumeConverter</div>
+    <div class="subtitle">Upload any resume → Get it converted to the Contractor Connect format instantly</div>
+  </div>
+
+  <div class="main-container">
+
+    <!-- LEFT: Upload Panel -->
+    <div class="panel upload-panel">
+      <div class="panel-title">📄 Upload Resume</div>
+      <div class="panel-desc">Supports PDF files. The AI will extract all content and reformat it into the standard template.</div>
+
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-icon">☁️</div>
+        <div class="drop-text">Drag & drop your PDF here</div>
+        <div class="drop-sub">or</div>
+        <button class="browse-btn" id="browseBtn" type="button">Browse File</button>
+        <input type="file" id="fileInput" accept=".pdf" style="display:none"/>
+        <div class="file-name" id="fileName">No file selected</div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-row"><span class="info-icon">✅</span> PDF files only</div>
+        <div class="info-row"><span class="info-icon">✅</span> Max size: 10MB</div>
+        <div class="info-row"><span class="info-icon">✅</span> AI-powered extraction via Groq</div>
+        <div class="info-row"><span class="info-icon">✅</span> Outputs standard 3-page DOCX</div>
+      </div>
+
+      <button class="convert-btn" id="convertBtn" disabled>
+        <span id="btnText">Convert Resume</span>
+        <span id="btnSpinner" class="spinner hidden"></span>
+      </button>
+
+      <div class="error-box hidden" id="errorBox">
+        <span>⚠️</span> <span id="errorMsg"></span>
+      </div>
+    </div>
+
+    <!-- RIGHT: Output Panel -->
+    <div class="panel output-panel">
+      <div class="panel-title">📋 How It Works</div>
+
+      <!-- Steps view -->
+      <div class="steps" id="stepsView">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-info">
+            <div class="step-title">Upload PDF Resume</div>
+            <div class="step-desc">Select any resume in PDF format from your computer</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-info">
+            <div class="step-title">AI Extraction</div>
+            <div class="step-desc">Groq AI reads and extracts all content — name, skills, experience, projects, education</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-info">
+            <div class="step-title">Format Applied</div>
+            <div class="step-desc">Content is placed into the 3-page Contractor Connect template (Evaluation Table + Resume)</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-info">
+            <div class="step-title">Download DOCX</div>
+            <div class="step-desc">Your converted resume is ready to download as a Word document</div>
+          </div>
+        </div>
+
+        <div class="template-preview">
+          <div class="preview-title">📄 Output Template Structure</div>
+          <div class="preview-pages">
+            <div class="preview-page">
+              <div class="page-label">Page 1</div>
+              <div class="page-content">
+                <div class="pg-row green-row">Contractor Connect Evaluation Sheet</div>
+                <div class="pg-row info-row-preview">Candidate Name</div>
+                <div class="pg-row info-row-preview">Experience · Notice Period</div>
+                <div class="pg-row info-row-preview">Column Headers</div>
+                <div class="pg-row yellow-row">Skill 1</div>
+                <div class="pg-row yellow-row">Skill 2</div>
+                <div class="pg-row yellow-row">Skill 3</div>
+              </div>
+            </div>
+            <div class="preview-page">
+              <div class="page-label">Pages 2–3</div>
+              <div class="page-content">
+                <div class="pg-row bold-row">CANDIDATE NAME</div>
+                <div class="pg-row ul-row">PROFILE SUMMARY</div>
+                <div class="pg-row ul-row">WORK EXPERIENCE</div>
+                <div class="pg-row ul-row">SKILLS</div>
+                <div class="pg-row ul-row">PROJECTS</div>
+                <div class="pg-row ul-row">EDUCATION</div>
+                <div class="pg-row ul-row">CERTIFICATIONS</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Processing view -->
+      <div class="processing-view hidden" id="processingView">
+        <div class="processing-anim">
+          <div class="proc-circle"></div>
+        </div>
+        <div class="proc-steps">
+          <div class="proc-step" id="proc1">📖 Extracting text from PDF...</div>
+          <div class="proc-step dim" id="proc2">🤖 AI analyzing resume content...</div>
+          <div class="proc-step dim" id="proc3">📝 Building formatted document...</div>
+          <div class="proc-step dim" id="proc4">✅ Finalizing output...</div>
+        </div>
+      </div>
+
+      <!-- Success view -->
+      <div class="success-view hidden" id="successView">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">Resume Converted!</div>
+        <div class="success-name" id="successName"></div>
+        <div class="success-desc">Your resume has been formatted into the 3-page Contractor Connect template and is ready to download.</div>
+        <a class="download-btn" id="downloadBtn" href="#">⬇️ Download DOCX</a>
+        <button class="convert-another-btn" id="convertAnotherBtn">Convert Another Resume</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer">
+    Built with Groq AI · Outputs the Contractor Connect Skill Evaluation Sheet format
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
